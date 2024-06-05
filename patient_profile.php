@@ -1,213 +1,230 @@
-<?php 
-session_start();
-include 'connection.php';
-?>
-<?php
- // Start the session
-// Check if user is logged in, if not, redirect to login page
-if (!isset($_SESSION['patient_name']) || !isset($_SESSION['patient_phone_number'])) {
-    header("Location: patient_login.php");
-    exit();
-}
-$patient_name = $_SESSION['patient_name'];
-$patient_phone_number = $_SESSION['patient_phone_number'];
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Information Form</title>
+    <title>Patient Details</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
+        /* Custom Styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: #f2f2f2; /* Light gray background */
         }
-        .form-container {
-            background-color: white;
+
+        .card {
+            background-color: #d4edda; /* Light green */
+            border: none;
+            border-radius: 15px;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        h1 {
-            text-align: center;
-            color: #333;
+
+        .grid-container {
+            padding: 20px;
         }
+
+        h2 {
+            color: #2c3e50; /* Dark blue for headings */
+        }
+
         label {
-            display: block;
-            margin: 10px 0 5px;
-            color: #555;
+            color: #34495e; /* Dark blue for labels */
         }
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        .radio-group {
-            margin-bottom: 10px;
-        }
-        .radio-group label {
-            display: inline-block;
-            margin-right: 10px;
-        }
+
         input[type="submit"] {
-            width: 100%;
-            padding: 10px;
-            background-color: #5cb85c;
+            background-color: #28a745; /* Green submit button */
+            color: white;
             border: none;
             border-radius: 5px;
-            color: white;
-            font-size: 16px;
+            padding: 10px 20px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%; /* Make button full width */
         }
+
         input[type="submit"]:hover {
-            background-color: #4cae4c;
+            background-color: #218838; /* Darker green on hover */
+        }
+
+        .edit-button, .save-button, .cancel-button {
+            background-color: #ffc107; /* Yellow edit button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%; /* Make button full width */
+            margin-top: 10px; /* Add some space above the button */
+        }
+
+        .save-button:hover, .cancel-button:hover {
+            background-color: #e0a800; /* Darker yellow on hover */
         }
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h1>Patient Information Form</h1>
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
 
-            <label for="gender">Gender:</label>
-            <select id="gender" name="gender" required>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-            </select>
-
-            <label for="age">Age:</label>
-            <input type="number" id="age" name="age" required>
-
-            <div class="radio-group">
-                <label>Hypertension:</label>
-                <input type="radio" id="hypertension_yes" name="hypertension" value="1">
-                <label for="hypertension_yes">Yes</label>
-                <input type="radio" id="hypertension_no" name="hypertension" value="0">
-                <label for="hypertension_no">No</label>
+<div class="container">
+    <div class="row justify-content-center grid-container">
+        <div class="col-md-6">
+            <div class="card">
+                <h2>Call me Medicine</h2>
+                <label><input type="checkbox"> Tablet Taken?</label><br>
+                <input type="submit" value="Submit">
             </div>
-
-            <div class="radio-group">
-                <label>Heart Disease:</label>
-                <input type="radio" id="heart_disease_yes" name="heart_disease" value="1">
-                <label for="heart_disease_yes">Yes</label>
-                <input type="radio" id="heart_disease_no" name="heart_disease" value="0">
-                <label for="heart_disease_no">No</label>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <h2>Patient Details</h2>
+                <div id="patient-view">
+                    <p><strong>ID:</strong> <span id="patient-id">unique identifier</span></p>
+                    <p><strong>Gender:</strong> <span id="patient-gender">Male, Female or Other</span></p>
+                    <p><strong>Age:</strong> <span id="patient-age">age of the patient</span></p>
+                    <p><strong>Hypertension:</strong> <span id="patient-hypertension">No or Yes</span></p>
+                    <p><strong>Heart Disease:</strong> <span id="patient-heart-disease">No or Yes</span></p>
+                    <p><strong>Ever Married:</strong> <span id="patient-ever-married">No or Yes</span></p>
+                    <p><strong>Work Type:</strong> <span id="patient-work-type">children, Govt_job, Never_worked, Private or Self-employed</span></p>
+                    <p><strong>Residence Type:</strong> <span id="patient-residence-type">Rural or Urban</span></p>
+                    <p><strong>Avg Glucose Level:</strong> <span id="patient-avg-glucose-level">average glucose level in blood</span></p>
+                    <p><strong>BMI:</strong> <span id="patient-bmi">body mass index</span></p>
+                    <p><strong>Smoking Status:</strong> <span id="patient-smoking-status">formerly smoked, never smoked, smokes or Unknown</span></p>
+                    <p><strong>Stroke:</strong> <span id="patient-stroke">No or Yes</span></p>
+                    <button class="edit-button" onclick="editPatientDetails()">Edit</button>
+                </div>
+                <div id="patient-edit" style="display: none;">
+                    <form id="patient-form">
+                        <div class="mb-3">
+                            <label for="edit-id" class="form-label">Phone No.</label>
+                            <input type="text" class="form-control" id="edit-id">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-gender" class="form-label">Gender</label>
+                            <select class="form-select" id="edit-gender">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-age" class="form-label">Age</label>
+                            <input type="number" class="form-control" id="edit-age">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-hypertension" class="form-label">Hypertension</label>
+                            <select class="form-select" id="edit-hypertension">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-heart-disease" class="form-label">Heart Disease</label>
+                            <select class="form-select" id="edit-heart-disease">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-ever-married" class="form-label">Ever Married</label>
+                            <select class="form-select" id="edit-ever-married">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-work-type" class="form-label">Work Type</label>
+                            <select class="form-select" id="edit-work-type">
+                                <option value="children">children</option>
+                                <option value="Govt_job">Govt_job</option>
+                                <option value="Never_worked">Never_worked</option>
+                                <option value="Private">Private</option>
+                                <option value="Self-employed">Self-employed</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-residence-type" class="form-label">Residence Type</label>
+                            <select class="form-select" id="edit-residence-type">
+                                <option value="Rural">Rural</option>
+                                <option value="Urban">Urban</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-avg-glucose-level" class="form-label">Avg Glucose Level</label>
+                            <input type="number" step="0.1" class="form-control" id="edit-avg-glucose-level">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-bmi" class="form-label">BMI</label>
+                            <input type="number" step="0.1" class="form-control" id="edit-bmi">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-smoking-status" class="form-label">Smoking Status</label>
+                            <select class="form-select" id="edit-smoking-status">
+                                <option value="formerly smoked">formerly smoked</option>
+                                <option value="never smoked">never smoked</option>
+                                <option value="smokes">smokes</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-stroke" class="form-label">Stroke</label>
+                            <select class="form-select" id="edit-stroke">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                        <button type="button" class="save-button" onclick="savePatientDetails()">Save</button>
+                        <button type="button" class="cancel-button" onclick="cancelEdit()">Cancel</button>
+                    </form>
+                </div>
             </div>
-
-            <label for="ever_married">Ever Married:</label>
-            <select id="ever_married" name="ever_married" required>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-            </select>
-
-            <label for="work_type">Work Type:</label>
-            <select id="work_type" name="work_type" required>
-                <option value="children">Children</option>
-                <option value="Govt_job">Government Job</option>
-                <option value="Never_worked">Never Worked</option>
-                <option value="Private">Private</option>
-                <option value="Self-employed">Self-employed</option>
-            </select>
-
-            <label for="residence_type">Residence Type:</label>
-            <select id="residence_type" name="residence_type" required>
-                <option value="Rural">Rural</option>
-                <option value="Urban">Urban</option>
-            </select>
-
-            <label for="avg_glucose_level">Average Glucose Level:</label>
-            <input type="number" step="0.01" id="avg_glucose_level" name="avg_glucose_level" required>
-
-            <label for="bmi">Body Mass Index (BMI):</label>
-            <input type="number" step="0.1" id="bmi" name="bmi" required>
-
-            <label for="smoking_status">Smoking Status:</label>
-            <select id="smoking_status" name="smoking_status" required>
-                <option value="formerly smoked">Formerly Smoked</option>
-                <option value="never smoked">Never Smoked</option>
-                <option value="smokes">Smokes</option>
-                <option value="Unknown">Unknown</option>
-            </select>
-
-            <div class="radio-group">
-                <label>Stroke:</label>
-                <input type="radio" id="stroke_yes" name="stroke" value="1">
-                <label for="stroke_yes">Yes</label>
-                <input type="radio" id="stroke_no" name="stroke" value="0">
-                <label for="stroke_no">No</label>
-            </div>
-
-            <input type="submit" value="Submit">
-        </form>
+        </div>
     </div>
+</div>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function editPatientDetails() {
+        document.getElementById('patient-view').style.display = 'none';
+        document.getElementById('patient-edit').style.display = 'block';
+        document.getElementById('edit-id').value = document.getElementById('patient-id').innerText;
+        document.getElementById('edit-gender').value = document.getElementById('patient-gender').innerText;
+        document.getElementById('edit-age').value = document.getElementById('patient-age').innerText;
+        document.getElementById('edit-hypertension').value = document.getElementById('patient-hypertension').innerText;
+        document.getElementById('edit-heart-disease').value = document.getElementById('patient-heart-disease').innerText;
+        document.getElementById('edit-ever-married').value = document.getElementById('patient-ever-married').innerText;
+        document.getElementById('edit-work-type').value = document.getElementById('patient-work-type').innerText;
+        document.getElementById('edit-residence-type').value = document.getElementById('patient-residence-type').innerText;
+        document.getElementById('edit-avg-glucose-level').value = document.getElementById('patient-avg-glucose-level').innerText;
+        document.getElementById('edit-bmi').value = document.getElementById('patient-bmi').innerText;
+        document.getElementById('edit-smoking-status').value = document.getElementById('patient-smoking-status').innerText;
+        document.getElementById('edit-stroke').value = document.getElementById('patient-stroke').innerText;
+    }
+
+    function savePatientDetails() {
+        document.getElementById('patient-id').innerText = document.getElementById('edit-id').value;
+        document.getElementById('patient-gender').innerText = document.getElementById('edit-gender').value;
+        document.getElementById('patient-age').innerText = document.getElementById('edit-age').value;
+        document.getElementById('patient-hypertension').innerText = document.getElementById('edit-hypertension').value;
+        document.getElementById('patient-heart-disease').innerText = document.getElementById('edit-heart-disease').value;
+        document.getElementById('patient-ever-married').innerText = document.getElementById('edit-ever-married').value;
+        document.getElementById('patient-work-type').innerText = document.getElementById('edit-work-type').value;
+        document.getElementById('patient-residence-type').innerText = document.getElementById('edit-residence-type').value;
+        document.getElementById('patient-avg-glucose-level').innerText = document.getElementById('edit-avg-glucose-level').value;
+        document.getElementById('patient-bmi').innerText = document.getElementById('edit-bmi').value;
+        document.getElementById('patient-smoking-status').innerText = document.getElementById('edit-smoking-status').value;
+        document.getElementById('patient-stroke').innerText = document.getElementById('edit-stroke').value;
+
+        document.getElementById('patient-view').style.display = 'block';
+        document.getElementById('patient-edit').style.display = 'none';
+    }
+
+    function cancelEdit() {
+        document.getElementById('patient-view').style.display = 'block';
+        document.getElementById('patient-edit').style.display = 'none';
+    }
+</script>
+
 </body>
 </html>
-
-
-<?php
-session_start();
-include 'connection.php';
-
-// Check if user is logged in, if not, redirect to patient_login page
-if (!isset($_SESSION['patient_name']) || !isset($_SESSION['patient_phone_number'])) {
-    header("Location: patient_login.php");
-    exit();
-}
-
-// Get patient information from session
-$patient_name = $_SESSION['patient_name'];
-$patient_phone_number = $_SESSION['patient_phone_number'];
-
-// Check if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form data
-    $gender = $_POST['gender'];
-    $age = $_POST['age'];
-    $hypertension = $_POST['hypertension'];
-    $heart_disease = $_POST['heart_disease'];
-    $ever_married = $_POST['ever_married'];
-    $work_type = $_POST['work_type'];
-    $residence_type = $_POST['residence_type'];
-    $avg_glucose_level = $_POST['avg_glucose_level'];
-    $bmi = $_POST['bmi'];
-    $smoking_status = $_POST['smoking_status'];
-    $stroke = $_POST['stroke'];
-
-    // Check if the user has already submitted the form
-    $sql_check = "SELECT * FROM patient_profile WHERE patient_phone_number = '$patient_phone_number'";
-    $result_check = $conn->query($sql_check);
-
-    if ($result_check->num_rows > 0) {
-        // Redirect to patient_profile_controller.php if form already submitted
-        header("Location: patient_profile_controller.php");
-        exit();
-    } else {
-        // Insert form data into patient_profile table
-        $sql_insert = "INSERT INTO patient_profile (patient_phone_number, patient_name, gender, age, hypertension, heart_disease, ever_married, work_type, residence_type, avg_glucose_level, bmi, smoking_status, stroke) 
-                VALUES ('$patient_phone_number', '$patient_name', '$gender', '$age', '$hypertension', '$heart_disease', '$ever_married', '$work_type', '$residence_type', '$avg_glucose_level', '$bmi', '$smoking_status', '$stroke')";
-
-        if ($conn->query($sql_insert) === TRUE) {
-            echo "<script>alert('New record created successfully');</script>";
-        } else {
-            echo "Error: " . $sql_insert . "<br>" . $conn->error;
-        }
-    }
-}
-?>
-
-
